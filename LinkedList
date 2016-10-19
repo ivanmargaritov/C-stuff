@@ -1,0 +1,136 @@
+#include <iostream>
+#include <cassert>
+using namespace std;
+
+struct Node
+{
+	int elem;
+	Node* next;
+
+	Node(const int& v, Node *n)
+	{
+		elem = v;
+		next = n;
+	}
+};
+
+class LinkedList
+{
+private:
+	Node* first;
+	int size;
+public:
+	LinkedList()
+	{
+		first = nullptr;
+		size = 0;
+	}
+	LinkedList(Node* first, int size)
+	{
+		this->first = first;
+		this->size = size;
+	}
+	LinkedList(const LinkedList& other)
+	{
+		this->size = other.size;
+
+	}
+	Node* getFirst()
+	{
+		return this->first;
+	}
+
+	int get(int index)
+	{
+		Node* crr = first;
+		while (index--)
+		{
+			assert(crr != NULL);
+			crr = crr->next;
+		}
+		return crr->elem;
+	}
+
+	int getElem(Node* elem) 
+	{
+		Node* crr = first;
+		int index = 0;
+
+		while (crr != elem) 
+		{
+			index++;
+			crr = crr->next;
+		}
+		return index;
+	}
+	LinkedList addElemFront(const int& data)
+	{
+		Node* newNode=new Node(data,nullptr);
+		newNode->next = first;
+		first = newNode;
+		return *this;
+	}
+
+	LinkedList addElem(const int& elem, int index) {
+
+		Node* crr = first;
+		Node* newBox=new Node(elem, NULL);
+
+		int counter = 0;
+
+		while (crr->next != NULL)
+		{
+			if (counter == index - 1)
+			{
+				newBox->next = crr->next;
+				crr->next = newBox;
+			}
+			counter++;
+			crr = crr->next;
+		}
+		return *this;
+	}
+
+	LinkedList removeElem(int elem) 
+	{
+		Node* crr = first;
+
+		while (crr->next != NULL)
+		{
+			if (crr->elem == elem)
+			{
+				Node* save = crr->next;
+				crr->next = crr->next->next;
+				delete save;
+				break;
+			}
+			crr = crr->next;
+		}
+		return *this;
+	}
+	friend ostream& operator << (ostream& out, const LinkedList& list);
+};
+
+ostream& operator<< (ostream& out, const LinkedList& list)
+{
+	Node* crr = list.first;
+	while (crr != NULL)
+	{
+		out << crr->elem << " ";
+		crr = crr->next;
+	}
+	return out;
+}
+
+int main()
+{
+	LinkedList list;
+	list.addElemFront(3);
+	list.addElemFront(73425);
+
+	cout << list;
+
+
+	system("pause");
+	return 0;
+}
