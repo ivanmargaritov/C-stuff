@@ -12,6 +12,11 @@ struct Node
 		elem = v;
 		next = n;
 	}
+	Node()
+	{
+		elem = 0;
+		next = nullptr;
+	}
 };
 
 class LinkedList
@@ -30,6 +35,7 @@ public:
 		this->first = first;
 		this->size = size;
 	}
+
 	LinkedList(const LinkedList& other)
 	{
 		this->size = other.size;
@@ -51,30 +57,23 @@ public:
 		return crr->elem;
 	}
 
-	int getElem(Node* elem) 
+	int getElem(Node* elem)
 	{
 		Node* crr = first;
 		int index = 0;
 
-		while (crr != elem) 
+		while (crr != elem)
 		{
 			index++;
 			crr = crr->next;
 		}
 		return index;
 	}
-	LinkedList addElemFront(const int& data)
-	{
-		Node* newNode=new Node(data,nullptr);
-		newNode->next = first;
-		first = newNode;
-		return *this;
-	}
-
+	
 	LinkedList addElem(const int& elem, int index) {
 
 		Node* crr = first;
-		Node* newBox=new Node(elem, NULL);
+		Node* newBox = new Node(elem, NULL);
 
 		int counter = 0;
 
@@ -91,7 +90,7 @@ public:
 		return *this;
 	}
 
-	LinkedList removeElem(int elem) 
+	LinkedList removeElem(int elem)
 	{
 		Node* crr = first;
 
@@ -109,6 +108,40 @@ public:
 		return *this;
 	}
 	friend ostream& operator << (ostream& out, const LinkedList& list);
+
+	void push(const int& data)
+	{
+		Node* newNode = new Node(data, nullptr);
+		newNode->next = first;
+		first = newNode;
+	}
+
+	void pop()
+	{
+		Node* temp=first;
+
+		first = temp->next;
+		delete temp;
+	}
+
+	bool isEmpty()
+	{
+		if (first->next == nullptr)
+		{
+			return true;
+		}
+		else
+			return false;
+	}
+
+	int top()
+	{
+		return first->elem;
+	}
+	int peek()
+	{
+		return first->elem;
+	}
 };
 
 ostream& operator<< (ostream& out, const LinkedList& list)
@@ -125,11 +158,23 @@ ostream& operator<< (ostream& out, const LinkedList& list)
 int main()
 {
 	LinkedList list;
-	list.addElemFront(3);
-	list.addElemFront(73425);
-
+	list.push(3);
+	list.push(73425);
+	list.push(73);
+	list.push(25);
+	list.push(425);
+	list.push(342);
+	list.push(99);
+	list.push(0);
+	list.pop();
 	cout << list;
+	cout << endl;
+	cout<<list.top()<<endl;
+	
+	cout<<list.isEmpty();
+	cout << endl;
 
+	cout << list.peek()<<endl;
 
 	system("pause");
 	return 0;
