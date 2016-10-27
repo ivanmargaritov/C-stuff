@@ -8,6 +8,9 @@ template <class T>
 using mapFn = T(*) (const T&);
 
 template <class T>
+using mapFn2 = bool(*) (const T&);
+
+template <class T>
 struct Node
 {
 	T data;
@@ -39,10 +42,11 @@ private:
 	void map(mapFn<T> f, Node<T>* subTreeRoot);
 	int count(Node<T>* subTreeRoot);
 	int countEvens(Node<T>* subTreeRoot);
-	int searchCount(mapFn<T> f, Node<T>* subTreeRoot);
+	int searchCount(mapFn2<T> f, Node<T>* subTreeRoot);
 	int height(Node<T>* subTreeRoot);
 	int countLeaves(Node<T>* subTreeRoot);
 	T& maxLeaf(T max, Node<T>* subTreeRoot);
+	T& getElement(const char* trace, Node<T>* subTreeRoot);
 public:
 	BTree();
 	void simplePrint() const;
@@ -52,10 +56,11 @@ public:
 	void map(mapFn<T> f);
 	int count();
 	int countEvens();
-	int searchCount(mapFn<T> f);
+	int searchCount(mapFn2<T> f);
 	int height();
 	int countLeaves();
 	T& maxLeaf();
+	T& getElement(const char* trace);
 };
 
 template<class T>
@@ -204,7 +209,7 @@ int BTree<T>::countEvens()
 }
 
 template <class T>
-int BTree<T>::searchCount(mapFn<T> f, Node<T>* subTreeRoot)
+int BTree<T>::searchCount(mapFn2<T> f, Node<T>* subTreeRoot)
 {
 	if (subTreeRoot == nullptr)
 	{
@@ -220,7 +225,7 @@ int BTree<T>::searchCount(mapFn<T> f, Node<T>* subTreeRoot)
 }
 
 template <class T>
-int BTree<T>::searchCount(mapFn<T> f)
+int BTree<T>::searchCount(mapFn2<T> f)
 {
 	return searchCount(f, root);
 }
@@ -230,7 +235,7 @@ bool oddNumber(const int& num)
 	return (num % 2 == 1) ? 1 : 0;
 }
 
-int max(int a, int b) 
+int max(int a, int b)
 {
 	return (a > b) ? a : b;
 }
@@ -274,34 +279,39 @@ template <class T>
 T& BTree<T>::maxLeaf(T max, Node<T>* subTreeRoot)
 {
 	if (subTreeRoot == nullptr)
-	{
 		return max;
-	}
-	if (subTreeRoot->left == nullptr&&subTreeRoot->right == nullptr)
+
+	if (subTreeRoot->left == nullptr && subTreeRoot->right == nullptr)
 	{
-		if (max > subTreeRoot->data)
+		if (max < subTreeRoot->data)
 		{
-			return max;
-		}
-		else
-		{
-			return subTreeRoot->data;
+			max = subTreeRoot->data;
 		}
 	}
-	if (maxLeaf(max, subTreeRoot->left) > maxLeaf(max, subTreeRoot->right))
+	
+	T maxLeft = maxLeaf(max, subTreeRoot->left);
+	T maxRight = maxLeaf(max, subTreeRoot->right);
+	if (maxLeft > maxRight)
 	{
-		return maxLeaf(max, subTreeRoot->left);
+		return maxLeft;
 	}
-	else
-	{
-		return maxLeaf(max, subTreeRoot -> right);
-	}
+	else return maxRight;
 }
 
 template <class T>
 T& BTree<T>::maxLeaf()
 {
 	return maxLeaf(0, root);
+}
+
+template <class T>
+T& BTree<T>::getElement(const char* trace, Node<T>* subTreeRoot)
+{
+	if (subTreeRoot == nullptr)
+	{
+		return -1;
+	}
+
 }
 
 int main()
@@ -314,25 +324,24 @@ int main()
 	t.add(26, "LR");
 	t.add(18, "RL");
 	t.add(1, "RR");
-	//t.add(9, "LL");
-	//t.add(12, "LLR");
-	//t.add(14, "LRL");
+	t.add(12, "LLR");
+	t.add(14, "LRL");
 	t.add(16, "LRR");
-	
+
 
 	t.simplePrint();
 	cout << endl << "-----------------" << endl;
-	cout <<"IS 2 IN THE TREE?   "<< t.member(2) << endl;
-	cout <<"IS 43 IS THE TREE?   "<< t.member(43) << endl;
+	cout << "IS 2 IN THE TREE?   " << t.member(2) << endl;
+	cout << "IS 43 IS THE TREE?   " << t.member(43) << endl;
 	t.map(plusOne);
 	cout << "PlusOne function applied: ";
 	t.simplePrint();
 	cout << endl;
-	cout <<"COUNT: "<< t.count() << endl;
-	cout << "COUNT EVENS: "<<t.countEvens() << endl;
+	cout << "COUNT: " << t.count() << endl;
+	cout << "COUNT EVENS: " << t.countEvens() << endl;
 
-	//cout << t.searchCount(dividesByFive);
-	cout <<"HEIGHT: "<< t.height() << endl;
+	cout <<"ELEMENTS SATISFYING THE FUNCTION: "<< t.searchCount(oddNumber)<<endl;
+	cout << "HEIGHT: " << t.height() << endl;
 	cout << "LEAVES: " << t.countLeaves() << endl;
 	cout << "MAX LEAF: " << t.maxLeaf() << endl;
 	system("pause");
