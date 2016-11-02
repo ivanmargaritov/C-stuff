@@ -1,6 +1,9 @@
 #include <iostream>
 #include <cassert>
 #include <string.h>
+#include <fstream>
+#include <string>
+#include <iomanip>
 
 using namespace std;
 
@@ -22,11 +25,26 @@ struct Node
 		this->data = data;
 		this->left = left;
 		this->right = right;
+		makeID();
 	}
 	Node()
 	{
 		this->left = nullptr;
 		this->right = nullptr;
+		makeID();
+	}
+	int getID() const
+	{
+		return id;
+	}
+private:
+	int id;
+
+	void makeID()
+	{
+		static int maxID = 0;
+		maxID++;
+		id = maxID;
 	}
 };
 
@@ -46,7 +64,17 @@ private:
 	int height(Node<T>* subTreeRoot);
 	int countLeaves(Node<T>* subTreeRoot);
 	T& maxLeaf(T max, Node<T>* subTreeRoot);
-	T& getElement(const char* trace, Node<T>* subTreeRoot);
+	//T& getElement(const char* trace, Node<T>* subTreeRoot);
+	void dottyPrint(Node <T>* subTreeRoot, ostream& out) const;
+	void serialize(Node<T>* subTreeRoot, ostream& out) const;
+	Node<T>* parseTree(istream &in);
+	void serializeScheme(Node<T>* subTreeRoot, ostream& out) const;
+	Node<T>* parseTreeScheme(istream& in);
+	//T& operator[](Node<T>* subTreeRoot, int i);
+	void prettyPrint(Node<T>* subTreeRoot, int space);
+	string findTrace(Node<T>* subTreeRoot, const T& x);
+	
+
 public:
 	BTree();
 	void simplePrint() const;
@@ -60,8 +88,16 @@ public:
 	int height();
 	int countLeaves();
 	T& maxLeaf();
-	T& getElement(const char* trace);
-};
+	//T& getElement(const char* trace);
+	void dottyPrint(ostream& out) const;
+	void serialize(ostream& out) const;
+	void deserialize(istream& in);
+	void serializeScheme(ostream& out) const;
+	void deserializeScheme(istream& in);
+	//T& operator[](int i)
+	void prettyPrint();
+	string findTrace(const T& x);
+};;
 
 template<class T>
 BTree<T>::BTree()
@@ -288,7 +324,7 @@ T& BTree<T>::maxLeaf(T max, Node<T>* subTreeRoot)
 			max = subTreeRoot->data;
 		}
 	}
-	
+
 	T maxLeft = maxLeaf(max, subTreeRoot->left);
 	T maxRight = maxLeaf(max, subTreeRoot->right);
 	if (maxLeft > maxRight)
@@ -305,13 +341,203 @@ T& BTree<T>::maxLeaf()
 }
 
 template <class T>
-T& BTree<T>::getElement(const char* trace, Node<T>* subTreeRoot)
+void BTree<T>::dottyPrint(Node<T>* subTreeRoot, ostream& out) const
+{
+	
+	if (subTreeRoot == nullptr)
+	{
+		return;
+	}
+	out << "    "<<subTreeRoot->getID() << "[label=\"" << subTreeRoot->data << "\"];" << endl;
+	if (subTreeRoot->left != nullptr)
+	{
+		
+		out << "        "<<subTreeRoot->getID() << "->" << subTreeRoot->left->getID() << endl;
+	}
+	if (subTreeRoot->right != nullptr)
+	{
+		
+		out << "        "<<subTreeRoot->getID() << "->" << subTreeRoot->right->getID() << endl;
+	}
+	
+	dottyPrint(subTreeRoot->left, out);
+	dottyPrint(subTreeRoot->right, out);
+}
+
+template <class T>
+void BTree<T>::dottyPrint(ostream& out) const
+{
+	out << "digraph G {" << endl;
+	dottyPrint(root, out);
+	out << "}" << endl;
+}
+
+template <class T>
+void BTree<T>::serialize(Node<T>* subTreeRoot, ostream& out) const
 {
 	if (subTreeRoot == nullptr)
 	{
-		return -1;
+		out << "null ";
+		return;
 	}
+	out << subTreeRoot->data << " ";
 
+	serialize(subTreeRoot->left, out);
+	serialize(subTreeRoot->right, out);
+}
+
+template <class T>
+void BTree<T>::serialize(ostream& out) const
+{
+	serialize(root, out);
+	cout << endl;
+}
+
+void removeWhite(istream& in)
+{
+	while (in.peek() <= 32)
+	{
+		in.get();
+	}
+}
+
+template <class T>
+Node<T>* BTree<T>::parseTree(istream& in)
+{
+	removeWhite(in);
+
+	if (in.peek() == 'n')
+	{
+		string dummy;
+		in >> dummy;
+		assert(dummy == "null");
+		return nullptr;
+	}
+	T data;
+	in >> data;
+	return new Node<T>(data, parseTree(in), parseTree(in));
+}
+
+template <class T>
+void BTree<T>::deserialize(istream& in)
+{
+	deleteAll(root);
+	root = parseTree(in);
+}
+
+template <class T>
+void BTree<T>::serializeScheme(Node<T>* subTreeRoot, ostream& out) const
+{
+	if (subTreeRoot == nullptr)
+	{
+		out << "() ";
+		return;
+	}
+	out << "(" << subTreeRoot->data << " ";
+	serializeScheme(subTreeRoot->left, out);
+	
+	serializeScheme(subTreeRoot->right, out);
+	out << ") ";
+}
+
+template <class T>
+void BTree<T>::serializeScheme(ostream& out) const
+{
+	serializeScheme(root, out);
+	cout << endl;
+}
+
+template <class T>
+Node<T>* BTree<T>::parseTreeScheme(istream& in)
+{
+	removeWhite(in);
+	if (in.peek() == '(')
+	{
+		string dummy;
+		in >> dummy;
+		assert(dummy == "()");
+		return nullptr;
+	}
+	T data;
+	in >> data;
+	return new Node<T>(data, parseTree(in), parseTreeScheme(in));
+}
+
+template <class T>
+void BTree<T>::deserializeScheme(istream& in)
+{
+	deleteAll(root);
+	root = parseTree(in);
+}
+
+/*template <class T>
+T& BTree<T>::operator[](Node<T>* subTreeRoot, int i)
+{
+	if (subTreeRoot == nullptr)
+	{
+		return 0;
+	}
+}*/
+
+template <class T>
+void BTree<T>::prettyPrint(Node<T>* subTreeRoot,int space)
+{
+	if (subTreeRoot == nullptr)
+	{
+		return;
+	}
+	if (subTreeRoot->right != nullptr)
+	{
+		prettyPrint(subTreeRoot->right,space+5);
+	}
+	if (space != 0)
+	{
+		cout << setw(space) << " ";
+	}
+	if (subTreeRoot->right != nullptr)
+	{
+		cout << endl << setw(space) << " ";
+	}
+	cout << subTreeRoot->data;
+	if (subTreeRoot->left != nullptr)
+	{
+		cout << setw(space) << " "<<endl;
+		prettyPrint(subTreeRoot->left, space + 5);
+	}
+}
+
+template <class T>
+void BTree<T>::prettyPrint()
+{
+	prettyPrint(root, 0);
+}
+
+template <class T>
+string BTree<T>::findTrace(Node<T>* subTreeRoot, const T& x)
+{
+	if (subTreeRoot == nullptr)
+	{
+		cout << "_";
+	}
+	if (subTreeRoot->data == x)
+	{
+		return "";
+	}
+	if (findTrace(subTreeRoot->left, x) == "")
+	{
+		return "L" + findTrace(subTreeRoot->right,x);
+	}
+	else
+	{
+		return "R" + findTrace(subTreeRoot->left, x);
+	}
+	
+}
+
+template <class T>
+string BTree<T>::findTrace(const T& x)
+{
+	return findTrace(root, x);
 }
 
 int main()
@@ -328,22 +554,53 @@ int main()
 	t.add(14, "LRL");
 	t.add(16, "LRR");
 
-
+	cout << "ORIGINAL TREE: " << endl;
 	t.simplePrint();
 	cout << endl << "-----------------" << endl;
-	cout << "IS 2 IN THE TREE?   " << t.member(2) << endl;
+	cout << endl<<"IS 2 IN THE TREE?   " << t.member(2) << endl;
 	cout << "IS 43 IS THE TREE?   " << t.member(43) << endl;
 	t.map(plusOne);
-	cout << "PlusOne function applied: ";
+	cout << endl<<"PlusOne function applied: ";
 	t.simplePrint();
 	cout << endl;
-	cout << "COUNT: " << t.count() << endl;
-	cout << "COUNT EVENS: " << t.countEvens() << endl;
+	cout <<endl<< "COUNT: " << t.count() << endl;
+	cout << endl<<"COUNT EVENS: " << t.countEvens() << endl;
 
-	cout <<"ELEMENTS SATISFYING THE FUNCTION: "<< t.searchCount(oddNumber)<<endl;
-	cout << "HEIGHT: " << t.height() << endl;
-	cout << "LEAVES: " << t.countLeaves() << endl;
-	cout << "MAX LEAF: " << t.maxLeaf() << endl;
+	cout << endl<< "ELEMENTS SATISFYING THE FUNCTION: " << t.searchCount(oddNumber) << endl;
+	cout << endl<<"HEIGHT: " << t.height() << endl;
+	cout << endl<<"LEAVES: " << t.countLeaves() << endl;
+	cout << endl<<"MAX LEAF: " << t.maxLeaf() << endl;
+
+	t.dottyPrint(cerr);
+
+	cout << endl<< "---------SERIALIZATION----------" << endl;
+	t.serialize(cout);
+
+	/*BTree<int> test;
+	ifstream in("data.txt");
+
+	test.deserialize(in);
+	cout << "-----DESERIALIZED TREE-----" << endl;
+	test.serialize(cout);
+	test.dottyPrint(cerr);*/
+
+	cout << endl<<"---------SCHEME SERIALIZATION----------" << endl;
+	t.serializeScheme(cout);
+
+	/*BTree<int> test;
+	ifstream in("data.txt");
+	
+	cout << "-----DESERALIZED SCHEME TREE----" << endl;
+	test.deserializeScheme(in);
+	test.serialize(cout);
+	test.dottyPrint(cerr);*/
+
+	cout << endl<<"PRETTY PRINT: " << endl;
+	t.prettyPrint();
+	cout << endl;
+
+	t.findTrace(15);
+
 	system("pause");
 	return 0;
 }
