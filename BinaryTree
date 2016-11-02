@@ -72,8 +72,8 @@ private:
 	Node<T>* parseTreeScheme(istream& in);
 	//T& operator[](Node<T>* subTreeRoot, int i);
 	void prettyPrint(Node<T>* subTreeRoot, int space);
-	string findTrace(Node<T>* subTreeRoot, const T& x);
-	
+	void findTrace(Node<T>* subTreeRoot, const T& x,string trace);
+
 
 public:
 	BTree();
@@ -343,23 +343,23 @@ T& BTree<T>::maxLeaf()
 template <class T>
 void BTree<T>::dottyPrint(Node<T>* subTreeRoot, ostream& out) const
 {
-	
+
 	if (subTreeRoot == nullptr)
 	{
 		return;
 	}
-	out << "    "<<subTreeRoot->getID() << "[label=\"" << subTreeRoot->data << "\"];" << endl;
+	out << "    " << subTreeRoot->getID() << "[label=\"" << subTreeRoot->data << "\"];" << endl;
 	if (subTreeRoot->left != nullptr)
 	{
-		
-		out << "        "<<subTreeRoot->getID() << "->" << subTreeRoot->left->getID() << endl;
+
+		out << "        " << subTreeRoot->getID() << "->" << subTreeRoot->left->getID() << endl;
 	}
 	if (subTreeRoot->right != nullptr)
 	{
-		
-		out << "        "<<subTreeRoot->getID() << "->" << subTreeRoot->right->getID() << endl;
+
+		out << "        " << subTreeRoot->getID() << "->" << subTreeRoot->right->getID() << endl;
 	}
-	
+
 	dottyPrint(subTreeRoot->left, out);
 	dottyPrint(subTreeRoot->right, out);
 }
@@ -435,7 +435,7 @@ void BTree<T>::serializeScheme(Node<T>* subTreeRoot, ostream& out) const
 	}
 	out << "(" << subTreeRoot->data << " ";
 	serializeScheme(subTreeRoot->left, out);
-	
+
 	serializeScheme(subTreeRoot->right, out);
 	out << ") ";
 }
@@ -473,14 +473,14 @@ void BTree<T>::deserializeScheme(istream& in)
 /*template <class T>
 T& BTree<T>::operator[](Node<T>* subTreeRoot, int i)
 {
-	if (subTreeRoot == nullptr)
-	{
-		return 0;
-	}
+if (subTreeRoot == nullptr)
+{
+return 0;
+}
 }*/
 
 template <class T>
-void BTree<T>::prettyPrint(Node<T>* subTreeRoot,int space)
+void BTree<T>::prettyPrint(Node<T>* subTreeRoot, int space)
 {
 	if (subTreeRoot == nullptr)
 	{
@@ -488,7 +488,7 @@ void BTree<T>::prettyPrint(Node<T>* subTreeRoot,int space)
 	}
 	if (subTreeRoot->right != nullptr)
 	{
-		prettyPrint(subTreeRoot->right,space+5);
+		prettyPrint(subTreeRoot->right, space + 5);
 	}
 	if (space != 0)
 	{
@@ -501,7 +501,7 @@ void BTree<T>::prettyPrint(Node<T>* subTreeRoot,int space)
 	cout << subTreeRoot->data;
 	if (subTreeRoot->left != nullptr)
 	{
-		cout << setw(space) << " "<<endl;
+		cout << setw(space) << " " << endl;
 		prettyPrint(subTreeRoot->left, space + 5);
 	}
 }
@@ -513,31 +513,26 @@ void BTree<T>::prettyPrint()
 }
 
 template <class T>
-string BTree<T>::findTrace(Node<T>* subTreeRoot, const T& x)
+void BTree<T>::findTrace(Node<T>* subTreeRoot, const T& x, string trace)
 {
 	if (subTreeRoot == nullptr)
 	{
-		cout << "_";
+		return;
 	}
 	if (subTreeRoot->data == x)
 	{
-		return "";
+		cout<<trace;
 	}
-	if (findTrace(subTreeRoot->left, x) == "")
-	{
-		return "L" + findTrace(subTreeRoot->right,x);
-	}
-	else
-	{
-		return "R" + findTrace(subTreeRoot->left, x);
-	}
-	
+	findTrace(subTreeRoot->left, x, trace + "L");
+	findTrace(subTreeRoot->right, x, trace + "R");
 }
 
 template <class T>
 string BTree<T>::findTrace(const T& x)
 {
-	return findTrace(root, x);
+	string trace = "";
+	findTrace(root, x, trace);
+	return trace;
 }
 
 int main()
@@ -557,23 +552,23 @@ int main()
 	cout << "ORIGINAL TREE: " << endl;
 	t.simplePrint();
 	cout << endl << "-----------------" << endl;
-	cout << endl<<"IS 2 IN THE TREE?   " << t.member(2) << endl;
+	cout << endl << "IS 2 IN THE TREE?   " << t.member(2) << endl;
 	cout << "IS 43 IS THE TREE?   " << t.member(43) << endl;
 	t.map(plusOne);
-	cout << endl<<"PlusOne function applied: ";
+	cout << endl << "PlusOne function applied: ";
 	t.simplePrint();
 	cout << endl;
-	cout <<endl<< "COUNT: " << t.count() << endl;
-	cout << endl<<"COUNT EVENS: " << t.countEvens() << endl;
+	cout << endl << "COUNT: " << t.count() << endl;
+	cout << endl << "COUNT EVENS: " << t.countEvens() << endl;
 
-	cout << endl<< "ELEMENTS SATISFYING THE FUNCTION: " << t.searchCount(oddNumber) << endl;
-	cout << endl<<"HEIGHT: " << t.height() << endl;
-	cout << endl<<"LEAVES: " << t.countLeaves() << endl;
-	cout << endl<<"MAX LEAF: " << t.maxLeaf() << endl;
+	cout << endl << "ELEMENTS SATISFYING THE FUNCTION: " << t.searchCount(oddNumber) << endl;
+	cout << endl << "HEIGHT: " << t.height() << endl;
+	cout << endl << "LEAVES: " << t.countLeaves() << endl;
+	cout << endl << "MAX LEAF: " << t.maxLeaf() << endl<<endl;
 
 	t.dottyPrint(cerr);
 
-	cout << endl<< "---------SERIALIZATION----------" << endl;
+	cout << endl << "---------SERIALIZATION----------" << endl;
 	t.serialize(cout);
 
 	/*BTree<int> test;
@@ -584,23 +579,23 @@ int main()
 	test.serialize(cout);
 	test.dottyPrint(cerr);*/
 
-	cout << endl<<"---------SCHEME SERIALIZATION----------" << endl;
+	cout << endl << "---------SCHEME SERIALIZATION----------" << endl;
 	t.serializeScheme(cout);
 
 	/*BTree<int> test;
 	ifstream in("data.txt");
-	
+
 	cout << "-----DESERALIZED SCHEME TREE----" << endl;
 	test.deserializeScheme(in);
 	test.serialize(cout);
 	test.dottyPrint(cerr);*/
 
-	cout << endl<<"PRETTY PRINT: " << endl;
+	cout << endl << "PRETTY PRINT: " << endl;
 	t.prettyPrint();
-	cout << endl;
+	cout << endl<<endl<<"---------TRACE TO 15---------"<<endl;
 
 	t.findTrace(15);
-
+	cout << endl;
 	system("pause");
 	return 0;
 }
