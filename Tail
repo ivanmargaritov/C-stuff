@@ -1,0 +1,222 @@
+#include <iostream>
+#include <cassert>
+using namespace std;
+
+struct Node
+{
+	int elem;
+	Node* next;
+
+	Node(const int& v, Node *n)
+	{
+		elem = v;
+		next = n;
+	}
+	Node()
+	{
+		elem = 0;
+		next = nullptr;
+	}
+};
+
+class LinkedList
+{
+private:
+	Node* first;
+	Node* last;
+	int size;
+public:
+	LinkedList()
+	{
+		first = nullptr;
+		last = nullptr;
+		size = 0;
+	}
+	LinkedList(Node* first, Node* last, int size)
+	{
+		this->first = first;
+		this->last = last;
+		this->size = size;
+	}
+
+	LinkedList(const LinkedList& other)
+	{
+		this->size = other.size;
+
+	}
+	Node* getFirst()
+	{
+		return this->first;
+	}
+
+	int get(int index)
+	{
+		Node* crr = first;
+		while (index--)
+		{
+			assert(crr != NULL);
+			crr = crr->next;
+		}
+		return crr->elem;
+	}
+
+	int getElem(Node* elem)
+	{
+		Node* crr = first;
+		int index = 0;
+
+		while (crr != elem)
+		{
+			index++;
+			crr = crr->next;
+		}
+		return index;
+	}
+
+	LinkedList addElem(const int& elem, int index) {
+
+		Node* crr = first;
+		Node* newBox = new Node(elem, NULL);
+
+		int counter = 0;
+
+		while (crr->next != NULL)
+		{
+			if (counter == index - 1)
+			{
+				newBox->next = crr->next;
+				crr->next = newBox;
+			}
+			counter++;
+			crr = crr->next;
+		}
+		return *this;
+	}
+
+	void enqueue(const int& elem)
+	{
+		Node* newBox = new Node(elem, NULL);
+
+		if (first == NULL)
+		{
+			first = newBox;
+			last = first;
+		}
+		last->next = newBox;
+		last = newBox;
+
+	}
+
+	void dequeue()
+	{
+		Node* newBox = new Node();
+		newBox = first;
+		first = first->next;
+		delete newBox;
+	}
+
+	LinkedList removeElem(int elem)
+	{
+		Node* crr = first;
+
+		while (crr->next != NULL)
+		{
+			if (crr->elem == elem)
+			{
+				Node* save = crr->next;
+				crr->next = crr->next->next;
+				delete save;
+				break;
+			}
+			crr = crr->next;
+		}
+		return *this;
+	}
+	friend ostream& operator << (ostream& out, const LinkedList& list);
+
+	void push(const int& data)
+	{
+		if (first== nullptr) {
+			first = new Node(data, nullptr);
+			last = first;
+		}
+		else {
+			Node* newNode = new Node(data, nullptr);
+			newNode->next = first;
+			first = newNode;
+		}
+
+	}
+
+	void pop()
+	{
+		Node* temp = first;
+
+		first = temp->next;
+		delete temp;
+	}
+
+	bool isEmpty()
+	{
+		if (first->next == nullptr)
+		{
+			return true;
+		}
+		else
+			return false;
+	}
+
+	int top()
+	{
+		return first->elem;
+	}
+	int peek()
+	{
+		return first->elem;
+	}
+};
+
+ostream& operator<< (ostream& out, const LinkedList& list)
+{
+	Node* crr = list.first;
+	while (crr != NULL)
+	{
+		out << crr->elem << " ";
+		crr = crr->next;
+	}
+	return out;
+}
+
+int main()
+{
+	LinkedList list;
+	list.push(5);
+	list.enqueue(3);
+	list.enqueue(73425);
+	list.enqueue(73);
+	list.enqueue(25);
+	list.enqueue(425);
+	list.enqueue(342);
+	list.enqueue(99);
+	list.enqueue(0);
+	cout << "-----ORIGINAL LIST-----" <<endl<<list<< endl;
+	list.pop();
+	cout << "-----POPPED LIST-----" << endl << list;
+	cout << endl << "-----TOP-----" << endl;
+	cout << list.top() << endl << "-----IS IT EMPTY?-----" << endl;
+
+	cout << list.isEmpty();
+	cout << endl << "-----PEEK-----" << endl;
+
+	cout << list.peek() << endl << "-----ENQUEUE-----" << endl;
+	list.enqueue(100);
+	cout << list;
+
+
+	cout << endl << "-----DEQUEUE-----" << endl;
+	list.dequeue();
+	cout << list << endl;
+
+	system("pause");
+	return 0;
+}
