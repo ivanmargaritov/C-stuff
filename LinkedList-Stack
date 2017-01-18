@@ -142,6 +142,20 @@ public:
 	{
 		return first->elem;
 	}
+	void printReverse()
+	{
+		printReverseRecursive(first);
+	}
+
+	void printReverseRecursive(Node* n)
+	{
+		if (n)
+		{
+			printReverseRecursive(n->next);
+			cout << n->elem << " ";
+		}
+	}
+	
 };
 
 ostream& operator<< (ostream& out, const LinkedList& list)
